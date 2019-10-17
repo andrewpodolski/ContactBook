@@ -1,0 +1,18 @@
+package com.andrew.commands;
+
+public enum CommandType {
+    CONTACT_LIST,
+    DELETE_CONTACTS,
+    EDIT_CONTACT,
+    CREATE_CONTACT,
+    CONTACT_INFO,
+    CONTACTS_PHONES,
+    SEARCH,
+    CONTACT_IMAGE,
+    SEND_EMAIL,
+    CONTACTS_ATTACHMENTS,
+    DOWNLOAD_ATTACHMENT,
+    COUNT_CONTACTS,
+    DEFAULT_IMAGE,
+    SEARCH_RESULT
+}

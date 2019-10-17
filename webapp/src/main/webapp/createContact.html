@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head lang="ru">
+    <meta charset="UTF-8">
+    <title>Add contact</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="js/contactValidation.js"></script>
+    <script src="js/handleServerErrors.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+
+      function defaultImage() {
+        fetch("controller/default_image").then(function (response) {
+          var status = response.status;
+          if (status === 200) {
+            response.json().then(function (data) {
+              var image = new Image();
+              image.src = 'data:image/png;base64,' + data;
+              document.getElementById("contactPhoto").src = image.src;
+            });
+          } else {
+            handleValidationErrors(response);
+          }
+        });
+      }
+
+      defaultImage();
+
+      window.onload = function () {
+        var image = document.getElementById("contactPhoto");
+        var upload = document.getElementById("uploadPhoto");
+        image.onclick = function () {
+          upload.click();
+        };
+      };
+
+      function addPhoto() {
+        var preview = document.getElementById('contactPhoto');
+        var file = document.querySelector('input[type=file]').files[0];
+        var fileReader = new FileReader();
+
+        fileReader.onloadend = function () {
+          preview.src = fileReader.result;
+        };
+
+        if (file) {
+          fileReader.readAsDataURL(file);
+        }
+      }
+    </script>
+</head>
+<body>
+<div class="media">
+    <img class="img-rounded" id="contactPhoto" style="width:15% " height="20%" alt="Unable to load default photo">
+    <input type="file" id="uploadPhoto" accept=".jpg, .jpeg, .png" style="display: none" onchange="addPhoto()">
+</div>
+<br>
+<h1 class="display-4 mb-4">Personal info</h1>
+<div class="form">
+    <form name="addForm">
+        <div class="container-fluid">
+            <form name="addForm">
+                <div class="row">
+                    <div class="form-group mr-3 col-sm-3">
+                        <label for="name" class="control-label"><b>Name*:</b></label>
+                        <p id="validateName" style="color: crimson"></p>
+                        <input type="text" id="name" name="name" class="form-control" placeholder="First name"
+                               maxlength="20" required>
+
+
+                    </div>
+                    <div class="form-group mr-3 col-sm-3">
+                        <label for="surname" class="control-label"><b>Surname*:</b></label>
+                        <p id="validateSurname" style="color: crimson"></p>
+                        <input type="text" class="form-control" placeholder="Surname" id="surname" name="surname"
+                               maxlength="20">
+                    </div>
+                    <div class="form-group mr-3 col-sm-3">
+                        <label for="patronymic" class="control-label"><b>Patronymic:</b></label>
+                        <p id="validatePatronymic" style="color: crimson"></p>
+                        <input type="text" class="form-control" placeholder="Patronymic" id="patronymic"
+                               name="patronymic" maxlength="20">
+                    </div>
+                </div>
+                <br><br>
+                <div class="row">
+                    <div class="form-group mr-3 col-sm-3">
+                        <br>
+                        <p id="validateBorn" style="color: crimson"></p>
+                        <label for="yearSelect" class="control-label"><b>Birthday:</b></label>
+
+
+                        <select id="yearSelect" name="year">
+                            <option value="year">Year</option>
+                        </select>
+                        <select id="monthSelect" name="month">
+                            <option value="month">Month</option>
+                        </select>
+                        <select id="daySelect" name="day">
+                            <option value="day">Day</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group mr-3 col-sm-3">
+                        <label for="nationality" class="control-label"><b>Nationality:</b></label>
+                        <p id="validateNat" style="color: crimson"></p>
+                        <input type="text" class="form-control" placeholder="Nationality" id="nationality"
+                               name="nationality" maxlength="20">
+
+                    </div>
+                    <div class="form-group mr-3 radio col-sm-3">
+                        <br>
+                        <label for="gender" class="control-label"><b>Gender:</b></label>
+
+                        <input type="radio" name="gender" value="male" id="gender">Male
+                        <input type="radio" name="gender" value="female">Female
+                        <br>
+                    </div>
+
+
+                </div>
+                <div class="row">
+                    <div class="form-group mr-3 radio col-sm-3">
+                        <br>
+                        <label class="control-label" for="maritalStatus"><b>Marital status:</b></label>
+
+                        <input class="radio" type="radio" name="maritalStatus" value="married" id="maritalStatus">Married
+                        <input class="radio" type="radio" name="maritalStatus" value="single">Single
+
+                    </div>
+                    <div class="form-group mr-3 col-sm-3">
+                        <label for="email" class="control-label"><b>Email*:</b></label>
+                        <p id="validateEmail" style="color: crimson"></p>
+                        <input type="text" class="form-control" placeholder="Email" id="email" name="email"
+                               maxlength="45">
+
+                    </div>
+                    <div class="form-group mr-3 col-sm-3">
+                        <label for="webSite" class="control-label"><b>Web site:</b></label>
+                        <p id="validateWeb" style="color: crimson"></p>
+                        <input type="text" class="form-control" placeholder="WebSite" id="webSite" name="webSite"
+                               maxlength="45">
+
+                    </div>
+                    <div class="form-group mr-3 col-sm-3">
+                        <label for="placeOfWork" class="control-label"><b>Place of work:</b></label>
+                        <p id="validatePlace" style="color: crimson"></p>
+                        <input type="text" class="form-control" placeholder="Place of Work" id="placeOfWork"
+                               name="placeOfWork" maxlength="30">
+                    </div>
+                </div>
+                <br>
+                <h3 class="display-5 mb-5">Address</h3>
+                <div class="row">
+                    <div class="form-group mr-3 col-sm-3">
+                        <label class="control-label" for="country"><b>Country:</b></label>
+                        <p id="validateCountry" style="color: crimson"></p>
+                        <input type=text class="form-control" placeholder="Country" id="country" name="country"
+                               maxlength="30">
+                    </div>
+                    <div class="form-group mr-3 col-sm-3">
+                        <label class="control-label" for="city"><b>City:</b></label>
+                        <p id="validateCity" style="color: crimson"></p>
+                        <input type=text class="form-control" placeholder="City" id="city" name="city" maxlength="20">
+                    </div>
+                    <div class="form-group mr-3 col-sm-3">
+                        <label class="control-label" for="street"><b>Street:</b></label>
+                        <p id="validateStreet" style="color: crimson"></p>
+                        <input type=text class="form-control" placeholder="Street" id="street" name="street"
+                               maxlength="20">
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="form-group mr-5  col-sm-1">
+                        <label class="control-label" for="houseNumber"><b>Building:</b></label>
+                        <p id="validateHouse" style="color: crimson"></p>
+                        <input type=text class="form-control" placeholder="Building" id="houseNumber" name="houseNumber"
+                               maxlength="5">
+                    </div>
+                    <div class="form-group mr-5  col-sm-1">
+                        <label class="control-label" for="flatNumber"><b>Apartments:</b></label>
+                        <p id="validateFlat" style="color: crimson"></p>
+                        <input type=text class="form-control" placeholder="Apt." id="flatNumber" name="flatNumber"
+                               maxlength="5">
+                    </div>
+                    <div class="form-group mr-5  col-sm-1">
+                        <label class="control-label" for="zipCode"><b>Zip Code:</b></label>
+                        <p id="validateZip" style="color: crimson"></p>
+                        <input type=text class="form-control" placeholder="Zip Code" id="zipCode" name="zipCode"
+                               maxlength="8">
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="form-group col-sm-2">
+                        <input class="btn btn-outline-primary mr-3" type="button" value="Save" id="addButton">
+                        <a href="./" class="btn btn-outline-danger mr-3">Cancel</a>
+                    </div>
+                </div>
+                <div class="row">
+                    <p id="serverErrors" style="color: crimson"></p>
+                </div>
+
+
+            </form>
+            <br>
+
+        </div>
+    </form>
+
+</div>
+</body>
+<script>
+  document.getElementById("addButton").addEventListener("click", function () {
+    var name = document.forms["addForm"]["name"].value;
+    var surname = document.forms["addForm"]["surname"].value;
+    var patronymic = document.forms["addForm"]["patronymic"].value;
+    var year = document.forms["addForm"]["year"].value;
+    var month = document.forms["addForm"]["month"].value;
+    var day = document.forms["addForm"]["day"].value;
+    var nationality = document.forms["addForm"]["nationality"].value;
+    var gender = document.forms["addForm"]["gender"].value;
+    var maritalStatus = document.forms["addForm"]["maritalStatus"].value;
+    var email = document.forms["addForm"]["email"].value;
+    var webSite = document.forms["addForm"]["webSite"].value;
+    var placeOfWork = document.forms["addForm"]["placeOfWork"].value;
+    var country = document.forms["addForm"]["country"].value;
+    var city = document.forms["addForm"]["city"].value;
+    var street = document.forms["addForm"]["street"].value;
+    var houseNumber = document.forms["addForm"]["houseNumber"].value;
+    var flatNumber = document.forms["addForm"]["flatNumber"].value;
+    var zipCode = document.forms["addForm"]["zipCode"].value;
+
+    if (validateContact("addForm")) {
+      var contact = {};
+      var address = {};
+      contact.id = 0;
+      contact.name = name;
+      contact.surname = surname;
+      contact.patronymic = patronymic;
+      contact.birthday = year + "-" + month + "-" + day;
+      contact.nationality = nationality;
+      contact.gender = gender;
+      contact.maritalStatus = maritalStatus;
+      contact.email = email;
+      contact.webSite = webSite;
+      contact.placeOfWork = placeOfWork;
+      address.country = country;
+      address.city = city;
+      address.street = street;
+      address.houseNumber = houseNumber;
+      address.flatNumber = flatNumber;
+      address.zipCode = zipCode;
+      contact.address = address;
+      contact.imageName = document.getElementById("contactPhoto").src;
+
+      fetch("controller/create_contact", {
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Content-type": "application/json"
+        },
+        body: JSON.stringify(contact)
+      }).then(function (response) {
+        var status = response.status;
+        if (status === 200) {
+          window.location = "./";
+        } else {
+          handleValidationErrors(response);
+        }
+      });
+    }
+  })
+</script>
+<script src="js/dateDropDownList.js"></script>
+</html>

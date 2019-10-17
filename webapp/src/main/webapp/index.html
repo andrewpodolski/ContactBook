@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head lang="ru">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home page</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="js/mustache.js"></script>
+    <script src="js/getJsonResponse.js"></script>
+    <script src="js/deleteContacts.js"></script>
+    <script src="js/email.js"></script>
+    <script src="js/contactValidation.js"></script>
+    <script src="js/searchStatement.js"></script>
+    <script src="js/searchValidation.js"></script>
+
+
+    <script id="rowTemplate" type="text/template">
+        <tr>
+            <td><input type="checkbox" name="check" value="{{id}}"></td>
+            <td><a href="editContact.html?id={{id}}">{{surname}} {{name}} {{patronymic}}</a></td>
+            <td>{{birthday}}</td>
+            <td>{{email}}</td>
+            <td>
+                {{#address.country}}{{address.country}}, {{/address.country}}
+                {{#address.city}} {{address.city}}, {{/address.city}}
+                {{#address.street}} {{address.street}}, {{/address.street}}
+                {{#address.houseNumber}} {{address.houseNumber}} {{/address.houseNumber}}
+                {{#address.flatNumber}}/ {{address.flatNumber}} {{/address.flatNumber}}
+            </td>
+        </tr>
+    </script>
+
+    <script>
+      "use strict";
+
+      function renderContacts(contacts) {
+        var rowTemplate = document.getElementById("rowTemplate").innerHTML;
+        var contactsHTML = "";
+        contacts.forEach(function (contact) {
+          contactsHTML += Mustache.render(rowTemplate, contact);
+        });
+        document.getElementById("contacts").innerHTML = contactsHTML;
+      }
+
+      fetch("controller/contact_list?page=1&index=3").then(function (response) {
+        var status = response.status;
+        if (status === 200) {
+          response.json().then(renderContacts);
+        } else {
+          handleErrorsLoading(response);
+        }
+      });
+
+      function createPagination(numberOfRows, command) {
+        var paginationIndex = 3;
+        var counter = 1;
+        var numberOfPages = Math.ceil(numberOfRows / paginationIndex);
+        var paginationDiv = document.getElementById("pagination");
+        paginationDiv.innerHTML = "";
+        for (var i = 1; i <= numberOfPages; i++) {
+          (function () {
+            var page = counter;
+            var button = document.createElement("button");
+            button.type = "button";
+            button.className = "btn btn-danger mr-1 btn-ms";
+            button.onclick = function () {
+              fetch(command + "?page=" + page + "&index=" + paginationIndex).then(function (resp) {
+                var status = resp.status;
+                if (status === 200) {
+                  resp.json().then(renderContacts);
+                } else {
+                  handleValidationErrors(resp);
+                }
+              });
+            };
+            button.appendChild(document.createTextNode(i.toString()));
+            paginationDiv.appendChild(button);
+            counter++;
+          })();
+        }
+      }
+
+      getJson("controller/count_contacts").then(function (numberOfRows) {
+        createPagination(numberOfRows, "controller/contact_list");
+      });
+
+      function openAddForm() {
+        window.location = "createContact.html";
+      }
+
+      function openSearchForm() {
+        document.getElementById("contactsTable").style.display = "none";
+        document.getElementById("emailForm").style.display = "none";
+        document.getElementById("searchForm").style.display = "block";
+      }
+
+      function closeSearchForm() {
+        document.getElementById("searchForm").style.display = "none";
+        document.getElementById("contactsTable").style.display = "block";
+      }
+
+
+    </script>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+            aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+            <button class="btn btn-outline-primary mr-4" id="addButton">Create</button>
+            <button class="btn btn-outline-danger mr-4" id="deleteButton">Delete</button>
+            <button class="btn btn-outline-primary mr-4" id="emailButton">Email</button>
+            <button class="btn btn-outline-primary mr-4" id="searchButton">Search</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container" id="searchOption"></div>
+
+<div id="contactsTable" class="container-fluid">
+    <table class=" table table-hover table-bordered">
+        <thead class="thead-red">
+        <tr>
+            <th>√</th>
+            <th>Full name</th>
+            <th>Birthday</th>
+            <th>Email</th>
+            <th>Address</th>
+        </tr>
+        </thead>
+        <tbody id="contacts"></tbody>
+    </table>
+    <p id="contactErrors" style="color: crimson"></p>
+    <div align="center" id="pagination"></div>
+</div>
+
+<div id="searchForm" style="display: none"><br>
+    <div class="container-fluid">
+        <form name="searchForm">
+            <h1 class="display-4 mb-4">Search form</h1>
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="form-group mr-3 col-sm-3">
+                        <label for="name" class="control-label"><b>Name*:</b></label>
+                        <input type="text" id="name" name="name" class="form-control" placeholder="First name"
+                               maxlength="20">
+                    </div>
+                    <div class="form-group mr-3 col-sm-3">
+                        <label for="surname" class="control-label"><b>Surname*:</b></label>
+                        <input type="text" class="form-control" placeholder="Surname" id="surname" name="surname"
+                               maxlength="20">
+                    </div>
+                    <div class="form-group mr-3 col-sm-3">
+                        <label for="patronymic" class="control-label"><b>Patronymic:</b></label>
+                        <input type="text" class="form-control" placeholder="Patronymic" id="patronymic"
+                               name="patronymic" maxlength="20">
+                    </div>
+
+
+                </div>
+                <br><br>
+                <div class="row">
+                    <div class="form-group mr-3 col-sm-3">
+                        <br>
+                        <label for="yearSelect" class="control-label"><b>Birthday:</b></label>
+
+                        <select id="yearSelect" name="year">
+                            <option value="year">Year</option>
+                        </select>
+                        <select id="monthSelect" name="month">
+                            <option value="month">Month</option>
+                        </select>
+                        <select id="daySelect" name="day">
+                            <option value="day">Day</option>
+                        </select>
+                        <label for="ageComparison">Age comparison</label>
+                        <select id="ageComparison" class="mr-4" name="ageComparison">
+                            <option value="-">-</option>
+                            <option value="more">More</option>
+                            <option value="less">Less</option>
+                            <option value="equals">Equals</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group mr-3 col-sm-3">
+                        <label for="nationality" class="control-label"><b>Nationality:</b></label>
+                        <input type="text" class="form-control" placeholder="Nationality" id="nationality"
+                               name="nationality" maxlength="20">
+
+                    </div>
+                    <div class="form-group mr-3 radio col-sm-3">
+                        <br>
+                        <label for="gender" class="control-label"><b>Gender:</b></label>
+
+                        <input type="radio" name="gender" value="male" id="gender">Male
+                        <input type="radio" name="gender" value="female">Female
+                        <br>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group mr-3 radio col-sm-3">
+                        <br>
+                        <label class="control-label" for="maritalStatus"><b>Marital status:</b></label>
+
+                        <input class="radio" type="radio" name="maritalStatus" value="married" id="maritalStatus">Married
+                        <input class="radio" type="radio" name="maritalStatus" value="single">Single
+
+                    </div>
+                    <div class="form-group mr-3 col-sm-3">
+                        <label for="email" class="control-label"><b>Email:</b></label>
+                        <input type="text" class="form-control" placeholder="Email" id="email" name="email"
+                               maxlength="45">
+
+                    </div>
+                    <div class="form-group mr-3 col-sm-3">
+                        <label for="webSite" class="control-label"><b>Web site:</b></label>
+                        <input type="text" class="form-control" placeholder="WebSite" id="webSite" name="webSite"
+                               maxlength="45">
+
+                    </div>
+                    <div class="form-group mr-3 col-sm-3">
+                        <label for="placeOfWork" class="control-label"><b>Place of work:</b></label>
+                        <input type="text" class="form-control" placeholder="Place of Work" id="placeOfWork"
+                               name="placeOfWork" maxlength="30">
+                    </div>
+                </div>
+                <br>
+                <h3 class="display-5 mb-5">Address</h3>
+                <div class="row">
+                    <div class="form-group mr-3 col-sm-3">
+                        <label class="control-label" for="country"><b>Country:</b></label>
+                        <input type=text class="form-control" placeholder="Country" id="country" name="country"
+                               maxlength="30">
+                    </div>
+                    <div class="form-group mr-3 col-sm-3">
+                        <label class="control-label" for="city"><b>City:</b></label>
+                        <input type=text class="form-control" placeholder="City" id="city" name="city" maxlength="20">
+                    </div>
+                    <div class="form-group mr-3 col-sm-3">
+                        <label class="control-label" for="street"><b>Street:</b></label>
+                        <input type=text class="form-control" placeholder="Street" id="street" name="street"
+                               maxlength="20">
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="form-group mr-5  col-sm-1">
+                        <label class="control-label" for="houseNumber"><b>Building:</b></label>
+                        <input type=text class="form-control" placeholder="Building" id="houseNumber" name="houseNumber"
+                               maxlength="5">
+                    </div>
+                    <div class="form-group mr-5  col-sm-1">
+                        <label class="control-label" for="flatNumber"><b>Apartments:</b></label>
+                        <input type=text class="form-control" placeholder="Apt." id="flatNumber" name="flatNumber"
+                               maxlength="5">
+                    </div>
+                    <div class="form-group mr-5  col-sm-1">
+                        <label class="control-label" for="zipCode"><b>Zip Code:</b></label>
+                        <input type=text class="form-control" placeholder="Zip Code" id="zipCode" name="zipCode"
+                               maxlength="8">
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <input class="btn btn-outline-primary mr-4" type="button" value="Search" id="startSearch">
+                    <input type="button" class="btn btn-outline-danger mr-4" id="cancelSearch" value="Cancel">
+                    <p id="serverErrors" style="color: crimson"></p>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="emailForm" style="display: none"><br>
+    <h1 class="display-4 mb-4">Email</h1>
+    <div class="container-fluid">
+        <form>
+            <div class="form-group mr-5  col-sm-1">
+                <label for="allEmail" class="control-label"><b>Recipients:</b> </label>
+                <input type="hidden" name="recipients" id="allEmail" class="form-control">
+                <textarea rows="2" cols="30" id="recipients"></textarea><br>
+            </div>
+            <div class="form-group mr-5  col-sm-2">
+                <label for="subject" class="control-label"><b>Subject:</b> </label>
+                <input type="text" class="form-control" name="subject" id="subject" maxlength="30"><br>
+            </div>
+            <div class="form-group mr-5  col-sm-1">
+                <label for="template" class="control-label"><b>Template</b></label>
+                <select id="template" name="template" onchange="setTemplateMessage()">
+                    <option value="-">-</option>
+                    <option id="greeting">Greeting</option>
+                    <option id="callback">Call back</option>
+                </select><br>
+            </div>
+            <div class="container-fluid">
+                <div class="form-group">
+                    <h4>Message:</h4>
+                    <textarea rows="3" cols="30" name="text" id="text" class="control-label"></textarea>
+                </div>
+            </div>
+            <div class="form-group mr-5 col-sm-2">
+                <input type="button" class="btn btn-outline-primary mr-3" id="sendEmail" value="Send">
+                <input type="button" class="btn btn-outline-danger mr-3" id="cancelEmail" value="Cancel">
+                <p id="emailErrors" style="color: crimson"></p>
+                <p id="emailSendStatus" style="color: darkgreen"></p>
+
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+<script>
+  "use strict";
+  document.getElementById("greeting").value = "Hello !";
+  document.getElementById("callback").value = "Call back as soon as possible!";
+
+  document.getElementById("deleteButton").addEventListener("click", deleteContacts);
+  document.getElementById("addButton").addEventListener("click", openAddForm);
+  document.getElementById("searchButton").addEventListener("click", openSearchForm);
+  document.getElementById("emailButton").addEventListener("click", openEmailFrom);
+  document.getElementById("cancelSearch").addEventListener("click", closeSearchForm);
+  document.getElementById("cancelEmail").addEventListener("click", closeEmailForm);
+  document.getElementById("startSearch").addEventListener("click", function () {
+    var isValid = validateSearch('searchForm');
+    if (isValid) {
+      var query = search();
+      if (query === "controller/search") {
+        var text = "Choose any value!";
+        document.getElementById("serverErrors").innerHTML = text;
+      } else {
+        var res = getJson(query);
+        res.then(function (data) {
+          if (data === 0) {
+            var text = "No results!";
+            document.getElementById("serverErrors").innerHTML = text;
+          } else {
+            closeSearchForm();
+            fetch("controller/search_result?page=1&index=3").then(function (resp) {
+              var status = resp.status;
+              if (status === 200) {
+                resp.json().then(renderContacts);
+              } else {
+                handleValidationErrors(resp)
+              }
+            });
+            createPagination(data, "controller/search_result");
+            var closeSearchResult = document.createElement("button");
+            closeSearchResult.type = "button";
+            closeSearchResult.className = "btn btn-danger btn-ms";
+            closeSearchResult.onclick = function () {
+              window.location.reload();
+            };
+            closeSearchResult.appendChild(document.createTextNode("Close"));
+            document.getElementById("pagination").appendChild(closeSearchResult);
+            var searchOption = document.getElementById("searchOption");
+            searchOption.innerHTML = "";
+            var p = document.createElement("h3");
+            p.appendChild(document.createTextNode("Search options:"));
+            searchOption.appendChild(p);
+            var ul = document.createElement("ul");
+            var params = query.split("?")[1].split("&");
+            for (var i = 0; i < params.length; i++) {
+              var pair = params[i].split("=");
+              var key = pair[0];
+              var value = pair[1];
+              var li = document.createElement("li");
+              li.appendChild(document.createTextNode(key + " - " + value));
+              ul.appendChild(li);
+            }
+            searchOption.appendChild(ul);
+          }
+        });
+      }
+    }
+  });
+  document.getElementById("sendEmail").addEventListener("click", function () {
+    var notEmpty = true;
+    if (document.getElementById("allEmail").value === "") {
+      var text = "Empty recipients field";
+      document.getElementById('emailErrors').innerHTML = text;
+      notEmpty = false;
+    }
+
+
+    if (document.getElementById("text").value === "") {
+      var text = "Empty text field";
+      document.getElementById('emailErrors').innerHTML = text;
+      notEmpty = false;
+    } else {
+      text = '';
+    }
+
+    if (notEmpty) {
+      var allRecipients = document.getElementById("allEmail").value;
+      var subject = document.getElementById("subject").value;
+      var template = document.getElementById("template").value;
+      var text = document.getElementById("text").value;
+
+      var messageObject = {};
+      messageObject.recipients = allRecipients;
+      messageObject.subject = subject;
+      messageObject.template = template;
+      messageObject.text = text;
+      fetch("controller/send_email", {
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Content-type": "application/json"
+        },
+        body: JSON.stringify(messageObject)
+      }).then(function (resp) {
+        var status = resp.status;
+        if (status === 200) {
+          document.getElementById("emailSendStatus").innerHTML = "Email was sent successfully";
+          setTimeout(timeOut, 8000);
+        } else {
+          handleValidationErrors(resp);
+        }
+      });
+    }
+  });
+
+  function timeOut() {
+    window.location = "./"
+  }
+</script>
+<script src="js/dateDropDownList.js"></script>
+<script src="js/handleErrorsLoading.js"></script>
+
+</html>
