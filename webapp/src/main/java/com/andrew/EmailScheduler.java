@@ -30,8 +30,7 @@ public class EmailScheduler implements ServletContextListener {
             scheduler.start();
             scheduler.scheduleJob(job, trigger);
         } catch (Exception e) {
-
-            e.printStackTrace();
+            logger.error(e);
         }
     }
 

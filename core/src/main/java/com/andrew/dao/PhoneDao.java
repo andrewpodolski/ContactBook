@@ -13,13 +13,12 @@ import java.util.List;
 
 
 public class PhoneDao {
-    public static String searchQuery;
     private static Logger logger = Logger.getLogger(PhoneDao.class);
 
 
     public static List<Phone> getAllPhonesById(Integer id) {
         List<Phone> phones = new ArrayList<>();
-        try (Connection connection = PoolConnection.getInstance().getBasicDataSource().getConnection();
+        try (Connection connection = PoolConnection.getInstance().getConnection();
              Statement statement = connection.createStatement();
              ResultSet result = statement.executeQuery("select * from phone where contact_id=" + id)) {
             while (result.next()) {
@@ -38,7 +37,7 @@ public class PhoneDao {
     }
 
     public static void delete(Integer id) {
-        try (Connection connection = PoolConnection.getInstance().getBasicDataSource().getConnection();
+        try (Connection connection = PoolConnection.getInstance().getConnection();
              Statement statement = connection.createStatement()) {
             statement.executeUpdate("delete from phone where contact_id=" + id);
         } catch (Exception e) {
@@ -48,7 +47,7 @@ public class PhoneDao {
     }
 
     public static void insert(Phone phone) {
-        try (Connection connection = PoolConnection.getInstance().getBasicDataSource().getConnection();
+        try (Connection connection = PoolConnection.getInstance().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement("insert into phone values(" +
                      "?,?,?,?,?,?)")) {
             preparedStatement.setInt(1, phone.getContactId());
@@ -66,7 +65,7 @@ public class PhoneDao {
 
     public static boolean isExist(Long phoneNumber) {
         boolean b = false;
-        try (Connection connection = PoolConnection.getInstance().getBasicDataSource().getConnection();
+        try (Connection connection = PoolConnection.getInstance().getConnection();
              Statement statement = connection.createStatement();
              ResultSet result = statement.
                      executeQuery("select count(1) from phone where phone_number=" + phoneNumber)) {

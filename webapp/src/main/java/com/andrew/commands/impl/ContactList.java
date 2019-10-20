@@ -25,7 +25,7 @@ public class ContactList implements Command {
                 Integer page = Integer.parseInt(request.getParameter("page"));
                 Integer index = Integer.parseInt(request.getParameter("index"));
 
-                if (!PoolConnection.isConnectionExists()) {
+                if (PoolConnection.checkConnection()) {
                     response.getWriter().write(new ObjectMapper().writeValueAsString("Contact list can't be loaded"));
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 } else {

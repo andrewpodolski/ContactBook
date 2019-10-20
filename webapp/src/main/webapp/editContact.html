@@ -9,10 +9,12 @@
     <link href="css/popUpWindow.css" rel="stylesheet">
     <script src="js/mustache.js"></script>
     <script src="js/getJsonResponse.js"></script>
+
+
+    <script src="js/getPhoto.js"></script>
     <script src="js/contactValidation.js"></script>
     <script src="js/phoneValidation.js"></script>
     <script src="js/attachmentValidation.js"></script>
-
     <script src="js/phoneData.js"></script>
     <script src="js/editPhone.js"></script>
     <script src="js/handleServerErrors.js"></script>
@@ -36,342 +38,9 @@
             <td>{{comment}}</td>
         </tr>
     </script>
-    <script>
-      "use strict";
-
-      function renderPhones(phones) {
-        var rowTemplate = document.getElementById("rowTemplate").innerHTML;
-        var phonesHTML = "";
-        phones.forEach(function (phone) {
-          phonesHTML += Mustache.render(rowTemplate, phone);
-        });
-        document.getElementById("phones").innerHTML = phonesHTML;
-      }
-
-      function renderAttachments(attachments) {
-        var rowTemplate = document.getElementById("rowTemplate2").innerHTML;
-        var attachmentsHTML = "";
-        attachments.forEach(function (attachment) {
-          attachmentsHTML += Mustache.render(rowTemplate, attachment);
-        });
-        document.getElementById("attachments").innerHTML = attachmentsHTML;
-      }
-
-      var id = window.location.search.split("=")[1];
-      fetch("controller/contacts_phones?contact_id=" + id).then(function (resp) {
-        var status = resp.status;
-        if (status === 200) {
-          resp.json().then(renderPhones);
-        } else {
-          console.log(resp);
-        }
-      });
-      fetch("controller/contacts_attachments?contact_id=" + id).then(function (resp) {
-        var status = resp.status;
-        if (status === 200) {
-          resp.json().then(renderAttachments);
-        } else {
-          console.log(resp);
-        }
-      });
-
-
-      function fillInputContact() {
-        fetch("controller/contact_info?contact_id=" + id).then(function (resp) {
-          var status = resp.status;
-          if (status === 200) {
-            resp.json().then(function (data) {
-              document.getElementById("id").value = id;
-              document.getElementById("name").value = data.name;
-              document.getElementById("surname").value = data.surname;
-              document.getElementById("patronymic").value = data.patronymic;
-              var year = "year", month = "month", day = "day";
-              if (data.birthday !== null) {
-                var dateArray = data.birthday.split("-");
-                year = dateArray[0];
-                month = parseInt(dateArray[1]);
-                day = parseInt(dateArray[2]);
-              }
-              document.getElementById("yearSelect").value = year;
-              document.getElementById("monthSelect").value = month;
-              document.getElementById("daySelect").value = day;
-              document.getElementById("nationality").value = data.nationality;
-              var g = data.gender;
-              if (g === "male") {
-                document.getElementById("genderMale").checked = true;
-              }
-              if (g === "female") {
-                document.getElementById("genderFemale").checked = true;
-              }
-              var m = data.maritalStatus;
-              if (m === "married") {
-                document.getElementById("statusMarried").checked = true;
-              }
-              if (m === "single") {
-                document.getElementById("statusSingle").checked = true;
-              }
-              document.getElementById("email").value = data.email;
-              document.getElementById("webSite").value = data.webSite;
-              document.getElementById("placeOfWork").value = data.placeOfWork;
-              document.getElementById("country").value = data.address.country;
-              document.getElementById("city").value = data.address.city;
-              document.getElementById("street").value = data.address.street;
-              document.getElementById("houseNumber").value = data.address.houseNumber;
-              document.getElementById("flatNumber").value = data.address.flatNumber;
-              document.getElementById("zipCode").value = data.address.zipCode;
-            });
-          } else {
-            handleValidationErrors(resp)
-          }
-        });
-      }
-
-      fillInputContact();
-
-      function insertPhoto() {
-        fetch("controller/contact_image?contact_id=" + id).then(function (resp) {
-          var status = resp.status;
-          if (status === 200) {
-            resp.json().then(function (data) {
-              var image = new Image();
-              image.src = 'data:image/png;base64,' + data;
-              document.getElementById("contactPhoto").src = image.src;
-            });
-          } else {
-            handleValidationErrors(resp);
-          }
-        });
-      }
-
-      insertPhoto();
-
-      function deletePhones() {
-        var phones = [];
-        var checkboxes = document.querySelectorAll("input[type=checkbox]:checked[name=checkPhone]");
-        for (var i = 0; i < checkboxes.length; i++) {
-          phones.push(checkboxes[i].value);
-        }
-        if (phones.length === 0) {
-          alert("You didn't choose phones!");
-        } else {
-          var table = document.getElementById("phonesTable");
-          for (var j = 1, row; row = table.rows[j]; j++) {
-            var number = row.cells[3].innerHTML;
-            if (phones.includes(number)) {
-              table.deleteRow(j);
-              j--;
-            }
-          }
-        }
-      }
-
-      function deleteAttachments() {
-        var attachments = [];
-        var checkboxes = document.querySelectorAll("input[type=checkbox]:checked[value=old]," +
-          "input[type=checkbox]:checked[value=edit], input[type=checkbox]:checked[value=new]");
-        for (var i = 0; i < checkboxes.length; i++) {
-          attachments.push(checkboxes[i].getAttribute("class"));
-        }
-        if (attachments.length === 0) {
-          alert("You didn't choose attachments (white, yellow or green cell)!");
-        } else {
-          var table = document.getElementById("attachmentsTable");
-          for (var j = 1, row; row = table.rows[j]; j++) {
-            var name = table.rows[j].cells[0].childNodes[0].className;
-            if (attachments.includes(name)) {
-              if (!isNaN(name)) {
-                table.rows[j].cells[1].style.backgroundColor = "red";
-                table.rows[j].cells[0].childNodes[0].value = "deleted";
-              } else {
-                var form = document.getElementById("editForm");
-                var input = document.getElementById(name);
-                if (form.contains(input)) {
-                  input.remove();
-                }
-                table.deleteRow(j);
-                j--;
-              }
-            }
-          }
-        }
-      }
-
-      function editPhoneFillInputs() {
-        var phone = [];
-        var checkboxes = document.querySelectorAll("input[type=checkbox]:checked[name=checkPhone]");
-        for (var i = 0; i < checkboxes.length; i++) {
-          phone.push(checkboxes[i].value);
-        }
-        if (phone.length === 0 || phone.length > 1) {
-          alert("Choose only 1 phone!");
-        } else {
-          document.getElementById("editPhonePopUp").style.display = "block";
-          document.getElementById("addPhonePopUp").style.display = "none";
-          document.getElementById("addAttachmentPopUp").style.display = "none";
-          document.getElementById("editAttachmentPopUp").style.display = "none";
-          var table = document.getElementById("phonesTable");
-          var length = table.rows.length;
-          var rowToUpdate;
-          for (i = 1; i < length; i++) {
-            var num = table.rows[i].cells[3].innerHTML;
-            if (num === phone[0]) {
-              rowToUpdate = table.rows[i];
-            }
-          }
-          var countryCode = rowToUpdate.cells[1].innerHTML;
-          var operatorCode = rowToUpdate.cells[2].innerHTML;
-          var phoneNumber = rowToUpdate.cells[3].innerHTML;
-          var type = rowToUpdate.cells[4].innerHTML;
-          var comment = rowToUpdate.cells[5].innerHTML;
-          document.getElementById("countryCode2").value = countryCode;
-          document.getElementById("operatorCode2").value = operatorCode;
-          document.getElementById("phoneNumber2").value = phoneNumber;
-          if (type === "home") {
-            document.getElementById("typeHome2").checked = true;
-          }
-          if (type === "mobile") {
-            document.getElementById("typeMobile2").checked = true;
-          }
-          document.getElementById("comment2").value = comment;
-        }
-      }
-
-      function editAttachmentFillInputs() {
-        var attachment = [];
-        var checkboxes = document.querySelectorAll("input[type=checkbox]:checked[value=old]," +
-          "input[type=checkbox]:checked[value=edit]");
-        for (var i = 0; i < checkboxes.length; i++) {
-          attachment.push(checkboxes[i].value);
-        }
-        if (attachment.length === 0 || attachment.length > 1) {
-          alert("You can edit only 1 attachment!");
-        } else {
-          document.getElementById("editAttachmentPopUp").style.display = "block";
-          document.getElementById("editPhonePopUp").style.display = "none";
-          document.getElementById("addPhonePopUp").style.display = "none";
-          document.getElementById("addAttachmentPopUp").style.display = "none";
-          var table = document.getElementById("attachmentsTable");
-          var length = table.rows.length;
-          var rowToUpdate;
-          var attachmentId = checkboxes[0].getAttribute("class");
-          for (i = 1; i < length; i++) {
-            var num = table.rows[i].cells[0].childNodes[0].className;
-            if (num === attachmentId) {
-              rowToUpdate = table.rows[i];
-            }
-          }
-          var fileName = rowToUpdate.cells[1].innerHTML;
-          var comment = rowToUpdate.cells[3].innerHTML;
-          document.getElementById("fileName2").value = fileName.split(".")[0];
-          document.getElementById("fileExtension").value = fileName.split(".")[1];
-          document.getElementById("attachmentComment2").value = comment;
-        }
-      }
-
-      function tablePhonesJson() {
-        var table = document.getElementById("phonesTable");
-        var length = table.rows.length;
-        var allPhones = [];
-        for (var i = 1; i < length; i++) {
-          var countryCode = table.rows[i].cells[1].innerHTML;
-          if (countryCode.length === 0) {
-            countryCode = null;
-          } else {
-            countryCode = parseInt(countryCode);
-          }
-          var operatorCode = table.rows[i].cells[2].innerHTML;
-          if (operatorCode.length === 0) {
-            operatorCode = null;
-          } else {
-            operatorCode = parseInt(operatorCode);
-          }
-          var phoneNumber = table.rows[i].cells[3].innerHTML;
-          phoneNumber = parseInt(phoneNumber);
-          var type = table.rows[i].cells[4].innerHTML;
-          if (type.length === 0) {
-            type = null;
-          }
-          var comment = table.rows[i].cells[5].innerHTML;
-          if (comment.length === 0) {
-            comment = null;
-          }
-          var phoneInfo = {
-            "contactId": parseInt(id), "countryCode": countryCode, "operatorCode": operatorCode,
-            "phoneNumber": phoneNumber, "type": type, "comment": comment
-          };
-          allPhones.push(phoneInfo);
-        }
-        document.getElementById("allPhones").value = JSON.stringify(allPhones);
-      }
-
-      function tableAttachmentsJson() {
-        var table = document.getElementById("attachmentsTable");
-        var length = table.rows.length;
-        var allAttachments = [];
-        for (var i = 1; i < length; i++) {
-          var attachmentId = table.rows[i].cells[0].childNodes[0].className;
-          var state = table.rows[i].cells[0].childNodes[0].value;
-          var fileName = table.rows[i].cells[1].innerHTML;
-          var loadedDate = table.rows[i].cells[2].innerHTML;
-          var comment = table.rows[i].cells[3].innerHTML;
-          if (comment.length === 0) {
-            comment = null;
-          }
-          var attachmentInfo = {
-            "attachmentId": parseInt(attachmentId), "contactId": parseInt(id), "state": state,
-            "fileName": fileName, "loadedDate": loadedDate, "comment": comment
-          };
-          allAttachments.push(attachmentInfo);
-        }
-        document.getElementById("allAttachments").value = JSON.stringify(allAttachments);
-      }
-
-      window.onload = function () {
-        var image = document.getElementById("contactPhoto");
-        var upload = document.getElementById("uploadPhoto");
-        image.onclick = function () {
-          upload.click();
-        };
-      };
-
-      function changePhoto() {
-        var preview = document.getElementById('contactPhoto');
-        var file = document.querySelector('input[type=file]').files[0];
-        var fileReader = new FileReader();
-
-        fileReader.onloadend = function () {
-          preview.src = fileReader.result;
-        };
-
-        if (file) {
-          fileReader.readAsDataURL(file);
-        }
-      }
-
-      function savePhoto() {
-        document.getElementById("photo").value = document.getElementById("contactPhoto").src;
-      }
-
-      function downloadAttachment() {
-        var attachment = [];
-        var checkboxes = document.querySelectorAll("input[type=checkbox]:checked[value=old]");
-        for (var i = 0; i < checkboxes.length; i++) {
-          attachment.push(checkboxes[i].getAttribute("class"));
-        }
-        if (attachment.length === 0 || attachment.length > 1) {
-          alert("You can download only white attachment!");
-        } else {
-          var href = "controller/download_attachment?attachment_id=" + attachment[0];
-          var download = document.createElement("a");
-          download.href = href;
-          download.click();
-        }
-      }
-    </script>
 </head>
 <body>
 <div class="container-fluid">
-    <!--<h1>Photo</h1>-->
     <img class="img-rounded" id="contactPhoto" style="width:15% " height="20%" alt="Unable to load photo">
     <input type="file" id="uploadPhoto" accept=".jpg, .jpeg, .png" style="display: none" onchange="changePhoto()">
 </div>
@@ -432,10 +101,10 @@
             </div>
             <div class="form-group mr-3 radio col-sm-3">
                 <br>
-                <label for="gender" class="control-label"><b>Gender:</b></label>
+                <label for="genderMale" class="control-label"><b>Gender:</b></label>
 
-                <input type="radio" name="gender" value="male" id="gender">Male
-                <input type="radio" name="gender" value="female">Female
+                <input type="radio" name="gender" value="male" id="genderMale">Male
+                <input type="radio" name="gender" value="female" id="genderFemale">Female
                 <br>
             </div>
 
@@ -444,10 +113,10 @@
         <div class="row">
             <div class="form-group mr-3 radio col-sm-3">
                 <br>
-                <label class="control-label" for="maritalStatus"><b>Marital status:</b></label>
+                <label class="control-label" for="maritalStatusMarried"><b>Marital status:</b></label>
 
-                <input class="radio" type="radio" name="maritalStatus" value="married" id="maritalStatus">Married
-                <input class="radio" type="radio" name="maritalStatus" value="single">Single
+                <input class="radio" type="radio" name="maritalStatus" value="married" id="maritalStatusMarried">Married
+                <input class="radio" type="radio" name="maritalStatus" value="single" id="maritalStatusSingle">Single
 
             </div>
             <div class="form-group mr-3 col-sm-3">
@@ -501,7 +170,7 @@
                        maxlength="5">
             </div>
             <div class="form-group mr-5  col-sm-1">
-                <label class="control-label" for="flatNumber"><b>Appartments:</b></label>
+                <label class="control-label" for="flatNumber"><b>Apartments:</b></label>
                 <p id="validateFlat" style="color: crimson"></p>
                 <input type=text class="form-control" placeholder="Apt." id="flatNumber" name="flatNumber"
                        maxlength="5">
@@ -529,19 +198,19 @@
             <h1>New phone</h1>
             <label for="countryCode">Country code</label>
             <p id="validateCountryCode" style="color: crimson"></p>
-            <input type="text" name="countryCode" id="countryCode">
+            <input type="text" name="countryCode" id="countryCode" maxlength="5">
             <label for="operatorCode">Operator code</label>
             <p id="validateOperatorCode" style="color: crimson"></p>
-            <input type="text" name="operatorCode" id="operatorCode">
+            <input type="text" name="operatorCode" id="operatorCode" maxlength="5">
             <label for="phoneNumber">Phone number</label>
             <p id="validatePhone" style="color: crimson"></p>
-            <input type="text" name="phoneNumber" id="phoneNumber">
+            <input type="text" name="phoneNumber" id="phoneNumber" maxlength="10">
             <label class="mr-1" for="typeHome">Type:</label>
             <input class="mr-1" type="radio" name="type" value="home" id="typeHome">Home
             <input class="ml-2 mr-1" type="radio" name="type" value="mobile" id="typeMobile">Mobile<br>
             <label for="comment">Comment</label>
             <p id="validateComment" style="color: crimson"></p>
-            <input type="text" name="comment" id="comment">
+            <input type="text" name="comment" id="comment" maxlength="45">
             <button type="button" class="btn btn-outline-primary mr-4" id="createPhone">Submit</button>
             <button type="button" class="btn btn-outline-danger mr-4 cancel" id="closeAddPopUp">Cancel</button>
         </form>
@@ -653,65 +322,9 @@
 
 </body>
 
-<script>
-  "use strict";
-  document.getElementById("deleteButton").addEventListener("click", deletePhones);
-  document.getElementById("openAddPopUp").addEventListener("click", function openPopUp() {
-    document.getElementById("addPhonePopUp").style.display = "block";
-    document.getElementById("editPhonePopUp").style.display = "none";
-    document.getElementById("addAttachmentPopUp").style.display = "none";
-    document.getElementById("editAttachmentPopUp").style.display = "none";
-  });
-  document.getElementById("openEditPopUp").addEventListener("click", editPhoneFillInputs);
-  document.getElementById("closeAddPopUp").addEventListener("click", function closePopUp() {
-    document.getElementById("addPhonePopUp").style.display = "none";
-  });
-  document.getElementById("closeEditPopUp").addEventListener("click", function closePopUp() {
-    document.getElementById("editPhonePopUp").style.display = "none";
-  });
-  document.getElementById("createPhone").addEventListener("click", createPhone);
-  document.getElementById("editPhone").addEventListener("click", editPhone);
-
-  document.getElementById("deleteAttachmentButton").addEventListener("click", deleteAttachments);
-  document.getElementById("openAddAttachmentPopUp").addEventListener("click", function openPopUp() {
-    document.getElementById("addAttachmentPopUp").style.display = "block";
-    document.getElementById("editAttachmentPopUp").style.display = "none";
-    document.getElementById("addPhonePopUp").style.display = "none";
-    document.getElementById("editPhonePopUp").style.display = "none";
-  });
-  document.getElementById("openEditAttachmentPopUp").addEventListener("click", editAttachmentFillInputs);
-  document.getElementById("closeAddAttachmentPopUp").addEventListener("click", function closePopUp() {
-    document.getElementById("addAttachmentPopUp").style.display = "none";
-  });
-  document.getElementById("closeEditAttachmentPopUp").addEventListener("click", function closePopUp() {
-    document.getElementById("editAttachmentPopUp").style.display = "none";
-  });
-  document.getElementById("createAttachment").addEventListener("click", createAttachment);
-  document.getElementById("editAttachment").addEventListener("click", editAttachment);
-  document.getElementById("downloadAttachmentsButton").addEventListener("click", downloadAttachment);
-
-  document.getElementById("finalEdit").addEventListener("click", function () {
-    if (validateContact('editForm')) {
-      tablePhonesJson();
-      tableAttachmentsJson();
-      savePhoto();
-      var editForm = document.getElementById("editForm");
-      var formData = new FormData(editForm);
-      fetch("controller/edit_contact", {
-        method: "POST",
-        body: formData
-      }).then(function (resp) {
-        var status = resp.status;
-        if (status === 200) {
-          window.location = "./";
-        } else {
-          handleValidationErrors(resp);
-          handleErrorsLoading(resp);
-        }
-      });
-    }
-  });
-
-</script>
+<script src="js/renderPhones.js"></script>
+<script src="js/renderAttachments.js"></script>
+<script src="js/editContactSave.js"></script>
+<script src="js/fillContactInfo.js"></script>
 <script src="js/dateDropDownList.js"></script>
 </html>

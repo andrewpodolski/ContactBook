@@ -1,8 +1,8 @@
 package com.andrew.dao;
 
 import com.andrew.connection.PoolConnection;
-import com.andrew.entity.AttachmentInfo;
 import com.andrew.entity.Attachment;
+import com.andrew.entity.AttachmentInfo;
 import com.andrew.service.impl.AttachmentServiceImpl;
 import org.apache.log4j.Logger;
 
@@ -19,7 +19,7 @@ public class AttachmentDao {
 
     public static List<AttachmentInfo> getAllAttachmentsById(Integer id) {
         List<AttachmentInfo> attachmentInfos = new ArrayList<>();
-        try (Connection connection = PoolConnection.getInstance().getBasicDataSource().getConnection();
+        try (Connection connection = PoolConnection.getInstance().getConnection();
              Statement statement = connection.createStatement();
              ResultSet result = statement.executeQuery("select * from attachment where contact_id=" + id)) {
             while (result.next()) {
@@ -41,7 +41,7 @@ public class AttachmentDao {
 
     public static String getFileNameByAttachmentId(Integer attachmentId) {
         String fileName = null;
-        try (Connection connection = PoolConnection.getInstance().getBasicDataSource().getConnection();
+        try (Connection connection = PoolConnection.getInstance().getConnection();
              Statement statement = connection.createStatement();
              ResultSet result = statement.executeQuery("select file_name from attachment " +
                      "where attachment_id=" + attachmentId)) {
@@ -57,7 +57,7 @@ public class AttachmentDao {
 
     public static Integer getContactIdByAttachmentId(Integer attachmentId) {
         Integer contactId = null;
-        try (Connection connection = PoolConnection.getInstance().getBasicDataSource().getConnection();
+        try (Connection connection = PoolConnection.getInstance().getConnection();
              Statement statement = connection.createStatement();
              ResultSet result = statement.executeQuery("select contact_id from attachment " +
                      "where attachment_id=" + attachmentId)) {
@@ -72,7 +72,7 @@ public class AttachmentDao {
     }
 
     public static void insert(Attachment attachment) {
-        try (Connection connection = PoolConnection.getInstance().getBasicDataSource().getConnection();
+        try (Connection connection = PoolConnection.getInstance().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(
                      "insert into attachment(contact_id, state, file_name, loaded_date, comment) " +
                              "values(?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)) {
@@ -99,7 +99,7 @@ public class AttachmentDao {
     }
 
     public static void update(AttachmentInfo attachmentInfo) {
-        try (Connection connection = PoolConnection.getInstance().getBasicDataSource().getConnection();
+        try (Connection connection = PoolConnection.getInstance().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement("update attachment set " +
                      "file_name=?, comment=? where attachment_id=?")) {
             preparedStatement.setString(1, attachmentInfo.getFileName());
@@ -114,7 +114,7 @@ public class AttachmentDao {
     }
 
     public static void delete(Integer attachmentId) {
-        try (Connection connection = PoolConnection.getInstance().getBasicDataSource().getConnection();
+        try (Connection connection = PoolConnection.getInstance().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement("delete from attachment " +
                      "where attachment_id=?")) {
             preparedStatement.setInt(1, attachmentId);

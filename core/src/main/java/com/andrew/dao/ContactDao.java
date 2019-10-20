@@ -73,7 +73,7 @@ public class ContactDao {
 
     public static Contact getContactById(Integer id) {
         Contact contact = new Contact();
-        try (Connection connection = PoolConnection.getInstance().getBasicDataSource().getConnection();
+        try (Connection connection = PoolConnection.getInstance().getConnection();
              Statement statement = connection.createStatement();
              ResultSet result = statement.executeQuery("select * from contact left join " +
                      "address on id=contact_id where id=" + id)) {
@@ -106,7 +106,7 @@ public class ContactDao {
     }
 
     public static void delete(Integer id) {
-        try (Connection connection = PoolConnection.getInstance().getBasicDataSource().getConnection();
+        try (Connection connection = PoolConnection.getInstance().getConnection();
              Statement statement = connection.createStatement()) {
             connection.setAutoCommit(false);
             statement.executeUpdate("set FOREIGN_KEY_CHECKS = 0;");
@@ -122,7 +122,7 @@ public class ContactDao {
     }
 
     public static void update(Contact contact) {
-        try (Connection connection = PoolConnection.getInstance().getBasicDataSource().getConnection();
+        try (Connection connection = PoolConnection.getInstance().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement("update contact set name=?, " +
                      "surname=?, patronymic=?, birthday=?, nationality=?, gender=?, marital_status=?, web_site=?, " +
                      "email=?, place_of_work=? where id=?");
@@ -159,7 +159,7 @@ public class ContactDao {
     }
 
     public static void insert(Contact contact) {
-        try (Connection connection = PoolConnection.getInstance().getBasicDataSource().getConnection();
+        try (Connection connection = PoolConnection.getInstance().getConnection();
              Statement statement = connection.createStatement();
              PreparedStatement preparedStatement = connection.prepareStatement("insert into contact(name,surname," +
                      "patronymic,birthday, nationality,gender,marital_status,web_site,email,place_of_work) " +
@@ -221,7 +221,7 @@ public class ContactDao {
 
     public static List<String> getAllEmail() {
         List<String> allEmail = new ArrayList<>();
-        try (Connection connection = PoolConnection.getInstance().getBasicDataSource().getConnection();
+        try (Connection connection = PoolConnection.getInstance().getConnection();
              Statement statement = connection.createStatement();
              ResultSet result = statement.executeQuery("select email from contact")) {
             while (result.next()) {
@@ -236,7 +236,7 @@ public class ContactDao {
 
     public static Integer searchCount() {
         Integer counter = 0;
-        try (Connection connection = PoolConnection.getInstance().getBasicDataSource().getConnection();
+        try (Connection connection = PoolConnection.getInstance().getConnection();
              Statement statement = connection.createStatement();
              ResultSet result = statement.executeQuery(ContactDao.searchQuery)) {
             while (result.next()) {
@@ -250,7 +250,7 @@ public class ContactDao {
 
     public static List<Contact> searchContacts(Integer page, Integer index) {
         List<Contact> contacts = new ArrayList<>();
-        try (Connection connection = PoolConnection.getInstance().getBasicDataSource().getConnection();
+        try (Connection connection = PoolConnection.getInstance().getConnection();
              Statement statement = connection.createStatement();
              ResultSet result = statement.executeQuery(ContactDao.searchQuery +
                      " order by id limit " + index * (page - 1) + ", " + index)) {
@@ -276,7 +276,7 @@ public class ContactDao {
         String month = fullDate[1];
         String day = fullDate[2];
         List<Contact> contacts = new ArrayList<>();
-        try (Connection connection = PoolConnection.getInstance().getBasicDataSource().getConnection();
+        try (Connection connection = PoolConnection.getInstance().getConnection();
              Statement statement = connection.createStatement();
              ResultSet result = statement.executeQuery("select name, surname, birthday from contact")) {
             while (result.next()) {

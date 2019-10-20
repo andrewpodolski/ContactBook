@@ -10,10 +10,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.log4j.Logger;
 
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +32,7 @@ public class CreateContact implements Command {
             errors.addAll(AddressValidation.validate(contact.getAddress()));
             if (ContactValidation.emailIsExists(contact.getEmail()))
                 errors.add("Email " + contact.getEmail() + " already exists");
-            if (!PoolConnection.isConnectionExists()) {
+            if (PoolConnection.checkConnection()) {
                 errors.add("Connection refused.");
             }
             if (errors.isEmpty()) {

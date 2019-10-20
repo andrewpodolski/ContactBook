@@ -47,23 +47,4 @@ public class SendEmail implements Command {
             logger.error(e);
         }
     }
-  /*  @Override
-    public void execute(HttpServletRequest request, HttpServletResponse response){
-        try {
-            request.setCharacterEncoding("UTF-8");
-            Message messageObject = new ObjectMapper().readValue(request.getReader().readLine(), new TypeReference<Message>() {
-            });
-            String[] recipients = messageObject.getRecipients().split(" ");
-            String subject = messageObject.getSubject();
-            String text = messageObject.getText();
-            for(String mail : recipients){
-                if(!mail.equals("")){
-                    emailService.sendMessage(recipients,subject,text);
-                }
-            }
-
-
-        }
-
-    }*/
 }

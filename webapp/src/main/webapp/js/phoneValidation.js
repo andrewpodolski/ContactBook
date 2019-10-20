@@ -7,35 +7,27 @@ function validatePhoneAdd() {
   var comment = document.forms["addPhoneForm"]["comment"].value;
   var text;
 
-  if (countryCode.length > 4 || isNaN(countryCode) || countryCode.length === 0) {
+  if (countryCode.length > 5 || isNaN(countryCode) || countryCode.length === 0) {
     text = "Country code must be less then 4 symbols!Cant\'t have letters!";
     document.getElementById("validateCountryCode").innerHTML = text;
   } else {
     text = "";
   }
 
-  if (operatorCode.length > 4 || isNaN(operatorCode) || countryCode.length === 0) {
+  if (operatorCode.length > 5 || isNaN(operatorCode) || countryCode.length === 0) {
     text = "Operator code must be less then 4 symbols!Cant\'t have letters!";
     document.getElementById("validateOperatorCode").innerHTML = text;
   } else {
     text = "";
   }
 
-  if (phoneNumber.length < 5 || phoneNumber.length > 15 || isNaN(phoneNumber) || countryCode.length === 0) {
+  if (phoneNumber.length < 5 || phoneNumber.length > 10 || isNaN(phoneNumber) || countryCode.length === 0) {
     text = "Country code must be less then 4 symbols!Cant\'t have letters!";
     document.getElementById("validatePhone").innerHTML = text;
     return false;
   } else {
     text = "";
   }
-
-
-  /* if ((countryCode.length === 0 && operatorCode.length === 0 && phoneNumber.length !== 0) ||
-       (countryCode.length !== 0 && operatorCode.length !== 0 && phoneNumber.length !== 0)) {
-   } else {
-      text = "Phone number can\'t be empty";
-   }*/
-
 
   if (comment.length > 30) {
     text = "Comment must be less then 30 symbols!";
@@ -76,13 +68,6 @@ function validatePhoneEdit() {
   } else {
     text = "";
   }
-
-  /* if ((countryCode.length === 0 && operatorCode.length === 0 && phoneNumber.length !== 0) ||
-       (countryCode.length !== 0 && operatorCode.length !== 0 && phoneNumber.length !== 0)) {
-   } else {
-       alert("Not valid format!");
-       return false;
-   }*/
 
   if (comment.length > 30) {
     text = "Comment must be less then 30 symbols!";

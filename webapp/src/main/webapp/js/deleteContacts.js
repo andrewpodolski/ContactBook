@@ -1,3 +1,4 @@
+
 function deleteContacts() {
   var idArray = [];
   var checkboxes = document.querySelectorAll("input[type=checkbox]:checked");

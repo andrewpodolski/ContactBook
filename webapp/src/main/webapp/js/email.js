@@ -1,5 +1,8 @@
 "use strict";
 
+document.getElementById("greeting").value = "Hello !";
+document.getElementById("callback").value = "Call back as soon as possible!";
+
 function openEmailFrom() {
   var idArray = [];
   var checkboxes = document.querySelectorAll("input[type=checkbox]:checked");
@@ -50,4 +53,55 @@ function setTemplateMessage() {
     area.value = "";
     area.disabled = false;
   }
+}
+
+document.getElementById("sendEmail").addEventListener("click", function () {
+  var notEmpty = true;
+  if (document.getElementById("allEmail").value === "") {
+    var text = "Empty recipients field";
+    document.getElementById('emailErrors').innerHTML = text;
+    notEmpty = false;
+  }
+
+
+  if (document.getElementById("text").value === "") {
+    var text = "Empty text field";
+    document.getElementById('emailErrors').innerHTML = text;
+    notEmpty = false;
+  } else {
+    text = '';
+  }
+
+  if (notEmpty) {
+    var allRecipients = document.getElementById("allEmail").value;
+    var subject = document.getElementById("subject").value;
+    var template = document.getElementById("template").value;
+    var text = document.getElementById("text").value;
+
+    var messageObject = {};
+    messageObject.recipients = allRecipients;
+    messageObject.subject = subject;
+    messageObject.template = template;
+    messageObject.text = text;
+    fetch("controller/send_email", {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Content-type": "application/json"
+      },
+      body: JSON.stringify(messageObject)
+    }).then(function (resp) {
+      var status = resp.status;
+      if (status === 200) {
+        document.getElementById("emailSendStatus").innerHTML = "Email was sent successfully";
+        setTimeout(timeOut, 8000);
+      } else {
+        handleValidationErrors(resp);
+      }
+    });
+  }
+});
+
+function timeOut() {
+  window.location = "./"
 }

@@ -48,7 +48,7 @@ public class PoolConnection {
     public Connection getConnection() throws SQLException {
         return basicDataSource.getConnection();
     }
-    public static boolean isConnectionExists() {
+    public static boolean checkConnection() {
         final String CHECK_SQL_QUERY = "SELECT 1";
         boolean isConnected = false;
         try {
@@ -57,7 +57,7 @@ public class PoolConnection {
         } catch (SQLException | NullPointerException e) {
             logger.error(e);
         }
-        return isConnected;
+        return !isConnected;
     }
 
 }
