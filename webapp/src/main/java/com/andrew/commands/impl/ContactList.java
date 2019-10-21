@@ -2,6 +2,7 @@ package com.andrew.commands.impl;
 
 import com.andrew.commands.Command;
 import com.andrew.connection.PoolConnection;
+import com.andrew.service.ContactService;
 import com.andrew.service.impl.ContactServiceImpl;
 import com.andrew.validation.HasNumberValidation;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 
 public class ContactList implements Command {
     private Logger logger = Logger.getLogger(ContactList.class);
+    private ContactService contactService = new ContactServiceImpl();
 
     @Override
     public void execute(HttpServletRequest request, HttpServletResponse response) {
@@ -29,7 +31,7 @@ public class ContactList implements Command {
                     response.getWriter().write(new ObjectMapper().writeValueAsString("Contact list can't be loaded"));
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 } else {
-                    response.getWriter().write(new ContactServiceImpl().getAllJsonContacts(page, index));
+                    response.getWriter().write(new ObjectMapper().writeValueAsString(contactService.getAllJsonContacts(page, index)));
                     response.setStatus(HttpServletResponse.SC_OK);
                 }
 

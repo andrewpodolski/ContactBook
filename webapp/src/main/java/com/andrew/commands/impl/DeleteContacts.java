@@ -1,19 +1,22 @@
 package com.andrew.commands.impl;
 
 import com.andrew.commands.Command;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.andrew.service.AttachmentService;
+import com.andrew.service.ContactService;
 import com.andrew.service.impl.AttachmentServiceImpl;
 import com.andrew.service.impl.ContactServiceImpl;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.util.ArrayList;
 
 public class DeleteContacts implements Command {
     private Logger logger = Logger.getLogger(DeleteContacts.class);
+    private ContactService contactService = new ContactServiceImpl();
+    private AttachmentService attachmentService = new AttachmentServiceImpl();
 
     @Override
     public void execute(HttpServletRequest request, HttpServletResponse response) {
@@ -21,13 +24,13 @@ public class DeleteContacts implements Command {
             ArrayList<Integer> contactsId = new ObjectMapper().readValue
                     (request.getReader().readLine(), new TypeReference<ArrayList<Integer>>() {
                     });
-            new ContactServiceImpl().deleteContacts(contactsId);
-            AttachmentServiceImpl attachmentServiceImpl = new AttachmentServiceImpl();
+            contactService.deleteContacts(contactsId);
             for (Integer id : contactsId) {
-                attachmentServiceImpl.deleteContactsFolder(id);
+                attachmentService.deleteContactsFolder(id);
             }
         } catch (Exception e) {
             logger.error(e);
+            e.printStackTrace();
         }
     }
 }

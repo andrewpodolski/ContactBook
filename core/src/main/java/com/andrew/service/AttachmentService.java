@@ -5,6 +5,7 @@ import com.andrew.entity.Attachment;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 
 public interface AttachmentService {
     String getPath(Integer id, String fileName) throws IOException;
@@ -13,7 +14,7 @@ public interface AttachmentService {
 
     void deleteContactsFolder(Integer id) throws IOException;
 
-    String getJsonAttachmentsById(Integer id) throws JsonProcessingException;
+    List<AttachmentInfo> getJsonAttachmentsById(Integer id) throws JsonProcessingException;
 
     void createAttachment(Attachment attachment);
 

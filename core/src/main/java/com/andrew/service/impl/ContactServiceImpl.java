@@ -18,25 +18,31 @@ import java.util.Properties;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ContactServiceImpl implements ContactService {
-    private ObjectMapper mapper = new ObjectMapper();
     private Properties properties = new Properties();
     private InputStream inputStream = ContactServiceImpl.class.getClassLoader().getResourceAsStream("path.properties");
 
-    @Override
-    public String getJsonCount() throws Exception {
-        return mapper.writeValueAsString(ContactDao.countContacts());
+    private String pathToImages() {
+        return properties.getProperty("images.path");
+    }
+
+    private String pathToDefaultImage() {
+        return properties.getProperty("default.image.path");
     }
 
     @Override
-    public String getAllJsonContacts(Integer page, Integer index) throws Exception {
-        List<Contact> allContacts = ContactDao.getAllContactsWithPagination(page, index);
-        return mapper.writeValueAsString(allContacts);
+    public Integer getJsonCount() {
+        return ContactDao.countContacts();
     }
 
     @Override
-    public String getJsonContactById(Integer id) throws Exception {
+    public List<Contact> getAllJsonContacts(Integer page, Integer index) {
+        return ContactDao.getAllContactsWithPagination(page, index);
+    }
+
+    @Override
+    public Contact getJsonContactById(Integer id) {
         Contact contact = ContactDao.getContactById(id);
-        return mapper.writeValueAsString(contact);
+        return contact;
     }
 
     @Override
@@ -61,7 +67,7 @@ public class ContactServiceImpl implements ContactService {
         String base64Image = photo.split(",")[1];
         byte[] bytesArray = Base64.getDecoder().decode(base64Image);
         properties.load(inputStream);
-        String path = properties.getProperty("images.path");
+        String path = pathToImages();
         String imageName = id + ".png";
         FileOutputStream stream = new FileOutputStream(new File(path + imageName));
         stream.write(bytesArray);
@@ -71,36 +77,36 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public String getJsonByteArrayPhoto(Integer id) throws Exception {
         properties.load(inputStream);
-        String path = properties.getProperty("images.path");
+        String path = pathToImages();
         File file = new File(path + id + ".png");
         FileInputStream stream = new FileInputStream(file);
         byte[] bytesArray = new byte[(int) file.length()];
         stream.read(bytesArray);
         stream.close();
-        return mapper.writeValueAsString(Base64.getEncoder().encodeToString(bytesArray));
+        return Base64.getEncoder().encodeToString(bytesArray);
     }
 
     @Override
     public String defaultJsonByteArrayPhoto() throws Exception {
         properties.load(inputStream);
-        String path = properties.getProperty("default.image.path");
+        String path = pathToDefaultImage();
         File file = new File(path + "default.png");
         FileInputStream stream = new FileInputStream(file);
         byte[] bytesArray = new byte[(int) file.length()];
         stream.read(bytesArray);
         stream.close();
-        return mapper.writeValueAsString(Base64.getEncoder().encodeToString(bytesArray));
+        return Base64.getEncoder().encodeToString(bytesArray);
     }
 
     @Override
-    public String getJsonSearchContacts(Integer page, Integer index) throws Exception {
+    public List<Contact> getJsonSearchContacts(Integer page, Integer index) {
         List<Contact> contacts = ContactDao.searchContacts(page, index);
-        return mapper.writeValueAsString(contacts);
+        return contacts;
     }
 
     @Override
-    public String getJsonSearchCount() throws Exception {
-        return mapper.writeValueAsString(ContactDao.searchCount());
+    public Integer getJsonSearchCount() {
+        return ContactDao.searchCount();
     }
 
     @Override

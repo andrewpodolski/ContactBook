@@ -1,6 +1,7 @@
 package com.andrew.commands.impl;
 
 import com.andrew.commands.Command;
+import com.andrew.service.AttachmentService;
 import com.andrew.service.impl.AttachmentServiceImpl;
 import com.andrew.validation.HasNumberValidation;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,6 +17,7 @@ import java.util.Map;
 
 public class DownloadAttachment implements Command {
     private Logger logger = Logger.getLogger(DownloadAttachment.class);
+    private AttachmentService attachmentService = new AttachmentServiceImpl();
 
     @Override
     public void execute(HttpServletRequest request, HttpServletResponse response) {
@@ -23,7 +25,7 @@ public class DownloadAttachment implements Command {
             request.setCharacterEncoding("UTF-8");
             if (HasNumberValidation.isNumber(request.getParameter("attachment_id"))) {
                 Integer id = Integer.parseInt(request.getParameter("attachment_id"));
-                HashMap<Integer, String> pair = new AttachmentServiceImpl().getContactIdAndFileName(id);
+                HashMap<Integer, String> pair = attachmentService.getContactIdAndFileName(id);
                 Integer contactId = null;
                 String fileName = null;
                 for (Map.Entry<Integer, String> entry : pair.entrySet()) {
@@ -34,7 +36,7 @@ public class DownloadAttachment implements Command {
                 PrintWriter out = response.getWriter();
                 response.setContentType("application/octet-stream");
                 response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
-                String fullPath = new AttachmentServiceImpl().getPath(contactId, file);
+                String fullPath = attachmentService.getPath(contactId, file);
 
                 FileInputStream stream = new FileInputStream(fullPath);
                 int i;

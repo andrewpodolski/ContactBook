@@ -3,6 +3,7 @@ package com.andrew.commands.impl;
 import com.andrew.commands.Command;
 import com.andrew.connection.PoolConnection;
 import com.andrew.entity.Contact;
+import com.andrew.service.ContactService;
 import com.andrew.service.impl.ContactServiceImpl;
 import com.andrew.validation.AddressValidation;
 import com.andrew.validation.ContactValidation;
@@ -17,7 +18,8 @@ import java.util.List;
 
 public class CreateContact implements Command {
     private Logger logger = Logger.getLogger(CreateContact.class);
-    private ContactServiceImpl contactServiceImpl = new ContactServiceImpl();
+
+    private ContactService contactService = new ContactServiceImpl();
 
     @Override
     public void execute(HttpServletRequest request, HttpServletResponse response) {
@@ -26,7 +28,7 @@ public class CreateContact implements Command {
             Contact contact = new ObjectMapper().readValue(request.getReader().readLine(), new TypeReference<Contact>() {
             });
 
-            contactServiceImpl.setEmptyFieldsToNull(contact);
+            contactService.setEmptyFieldsToNull(contact);
             List<String> errors = new ArrayList<>();
             errors.addAll(ContactValidation.validate(contact));
             errors.addAll(AddressValidation.validate(contact.getAddress()));
@@ -36,7 +38,7 @@ public class CreateContact implements Command {
                 errors.add("Connection refused.");
             }
             if (errors.isEmpty()) {
-                contactServiceImpl.createContact(contact);
+                contactService.createContact(contact);
                 response.setStatus(HttpServletResponse.SC_OK);
             } else {
                 response.getWriter().write(new ObjectMapper().writeValueAsString(errors));
@@ -45,6 +47,7 @@ public class CreateContact implements Command {
             }
         } catch (Exception e) {
             logger.error(e);
+            e.printStackTrace();
         }
     }
 

@@ -3,13 +3,14 @@ package com.andrew.service;
 import com.andrew.entity.Contact;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public interface ContactService {
-    String getJsonCount() throws Exception;
+    Integer getJsonCount() throws Exception;
 
-    String getAllJsonContacts(Integer page, Integer index) throws Exception;
+    List<Contact> getAllJsonContacts(Integer page, Integer index) throws Exception;
 
-    String getJsonContactById(Integer id) throws Exception;
+    Contact getJsonContactById(Integer id) throws Exception;
 
     void deleteContacts(ArrayList<Integer> list);
 
@@ -23,9 +24,9 @@ public interface ContactService {
 
     String defaultJsonByteArrayPhoto() throws Exception;
 
-    String getJsonSearchContacts(Integer page, Integer index) throws Exception;
+    List<Contact> getJsonSearchContacts(Integer page, Integer index) throws Exception;
 
-    String getJsonSearchCount() throws Exception;
+    Integer getJsonSearchCount() throws Exception;
 
     void setEmptyFieldsToNull(Contact contact);
 }

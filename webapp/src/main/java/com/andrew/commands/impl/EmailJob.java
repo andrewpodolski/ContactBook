@@ -21,7 +21,6 @@ public class EmailJob implements Job {
     private EmailService emailService = new EmailServiceImpl();
     private Properties properties = new Properties();
 
-
     @Override
     public void execute(JobExecutionContext context) {
         LocalDate localDate = LocalDate.now();

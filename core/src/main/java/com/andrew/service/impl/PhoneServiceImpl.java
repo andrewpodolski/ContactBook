@@ -4,18 +4,15 @@ import com.andrew.dao.PhoneDao;
 import com.andrew.entity.Phone;
 import com.andrew.service.PhoneService;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PhoneServiceImpl implements PhoneService {
-    private ObjectMapper mapper = new ObjectMapper();
 
     @Override
-    public String getJsonPhonesById(Integer id) throws JsonProcessingException {
+    public List<Phone> getJsonPhonesById(Integer id) {
         List<Phone> allPhones = PhoneDao.getAllPhonesById(id);
         for (Phone phone : allPhones) {
             if (phone.getCountryCode() == 0)
@@ -23,7 +20,7 @@ public class PhoneServiceImpl implements PhoneService {
             if (phone.getOperatorCode() == 0)
                 phone.setOperatorCode(null);
         }
-        return mapper.writeValueAsString(allPhones);
+        return allPhones;
     }
 
     @Override

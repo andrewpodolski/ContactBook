@@ -7,6 +7,8 @@ import com.andrew.entity.Attachment;
 import com.andrew.entity.AttachmentInfo;
 import com.andrew.entity.Contact;
 import com.andrew.entity.Phone;
+import com.andrew.service.AttachmentService;
+import com.andrew.service.ContactService;
 import com.andrew.service.impl.AttachmentServiceImpl;
 import com.andrew.service.impl.ContactServiceImpl;
 import com.andrew.service.impl.PhoneServiceImpl;
@@ -33,14 +35,16 @@ import java.util.Map;
 @MultipartConfig
 public class EditContact implements Command {
     private Logger logger = Logger.getLogger(EditContact.class);
-    private DiskFileItemFactory factory = new DiskFileItemFactory();
-    private List<String> contactErrors = new ArrayList<>();
-    private List<String> phoneErrors = new ArrayList<>();
-    private ContactServiceImpl contactServiceImpl = new ContactServiceImpl();
-    private AttachmentServiceImpl attachmentServiceImpl = new AttachmentServiceImpl();
+
+    private ContactService contactService = new ContactServiceImpl();
+    private AttachmentService attachmentService = new AttachmentServiceImpl();
+
     private ObjectMapper objectMapper = new ObjectMapper();
     private Map<String, String> allParams = new LinkedHashMap<>();
-    private List<String> connectionErrors = new ArrayList<>();
+    private DiskFileItemFactory factory = new DiskFileItemFactory();
+
+    private List<String> contactErrors = new ArrayList<>();
+    private List<String> phoneErrors = new ArrayList<>();
 
     @Override
     public void execute(HttpServletRequest request, HttpServletResponse response) {
@@ -77,7 +81,7 @@ public class EditContact implements Command {
                 Address address = new Address(country, city, street, houseNumber, flatNumber, zipCode);
                 Contact contact = new Contact(id, name, surname, patronymic, birthday, nationality, gender,
                         maritalStatus, webSite, email, placeOfWork, address);
-                contactServiceImpl.setEmptyFieldsToNull(contact);
+                this.contactService.setEmptyFieldsToNull(contact);
 
                 contactErrors.addAll(ContactValidation.validate(contact));
                 contactErrors.addAll(AddressValidation.validate(address));
@@ -88,7 +92,7 @@ public class EditContact implements Command {
                 List<String> phonesErrors = new ArrayList<>(new PhoneServiceImpl().savingPhones(allPhones));
 
                 String photo = allParams.get("photo");
-                contactServiceImpl.updatePhoto(id, photo);
+                this.contactService.updatePhoto(id, photo);
 
                 String jsonAttachments = allParams.get("allAttachments");
                 ArrayList<AttachmentInfo> allAttachmentInfos = new ObjectMapper().readValue(jsonAttachments, new TypeReference<ArrayList<AttachmentInfo>>() {
@@ -109,11 +113,11 @@ public class EditContact implements Command {
     private void setAttachmentStatus(ArrayList<AttachmentInfo> allAttachmentInfos) throws IOException {
         for (AttachmentInfo attachmentInfo : allAttachmentInfos) {
             if (attachmentInfo.getState().equals("edit")) {
-                attachmentServiceImpl.updateAttachment(attachmentInfo);
+                attachmentService.updateAttachment(attachmentInfo);
             }
             if (attachmentInfo.getState().equals("deleted")) {
-                attachmentServiceImpl.deleteAttachmentsFromFolder(attachmentInfo.getAttachmentId());
-                attachmentServiceImpl.deleteAttachments(attachmentInfo.getAttachmentId());
+                attachmentService.deleteAttachmentsFromFolder(attachmentInfo.getAttachmentId());
+                attachmentService.deleteAttachments(attachmentInfo.getAttachmentId());
             }
         }
     }
@@ -142,7 +146,7 @@ public class EditContact implements Command {
 
     private void formResponse(HttpServletResponse response, Contact contact, List<String> phonesErrors) throws IOException {
         if (contactErrors.isEmpty() && phoneErrors.isEmpty()) {
-            contactServiceImpl.updateContact(contact);
+            this.contactService.updateContact(contact);
             response.setStatus(HttpServletResponse.SC_OK);
         } else {
             contactErrors.addAll(phonesErrors);

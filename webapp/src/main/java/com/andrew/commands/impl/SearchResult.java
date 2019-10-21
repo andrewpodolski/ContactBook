@@ -1,6 +1,7 @@
 package com.andrew.commands.impl;
 
 import com.andrew.commands.Command;
+import com.andrew.service.ContactService;
 import com.andrew.service.impl.ContactServiceImpl;
 import com.andrew.validation.HasNumberValidation;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 
 public class SearchResult implements Command {
     private Logger logger = Logger.getLogger(SearchResult.class);
+    private ContactService contactService = new ContactServiceImpl();
 
     @Override
     public void execute(HttpServletRequest request, HttpServletResponse response) {
@@ -23,7 +25,7 @@ public class SearchResult implements Command {
                 response.setHeader("Content-Type", "application/json; charset=UTF-8");
                 Integer page = Integer.parseInt(request.getParameter("page"));
                 Integer index = Integer.parseInt(request.getParameter("index"));
-                response.getWriter().write(new ContactServiceImpl().getJsonSearchContacts(page, index));
+                response.getWriter().write(new ObjectMapper().writeValueAsString(contactService.getJsonSearchContacts(page, index)));
                 response.setStatus(HttpServletResponse.SC_OK);
             } else {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

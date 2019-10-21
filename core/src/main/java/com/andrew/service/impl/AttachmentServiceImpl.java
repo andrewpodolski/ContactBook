@@ -1,11 +1,10 @@
 package com.andrew.service.impl;
 
 import com.andrew.dao.AttachmentDao;
-import com.andrew.entity.AttachmentInfo;
 import com.andrew.entity.Attachment;
+import com.andrew.entity.AttachmentInfo;
 import com.andrew.service.AttachmentService;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 
@@ -21,9 +20,12 @@ import java.util.Properties;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AttachmentServiceImpl implements AttachmentService {
-    private ObjectMapper mapper = new ObjectMapper();
     private Properties properties = new Properties();
     private InputStream inputStream = AttachmentServiceImpl.class.getClassLoader().getResourceAsStream("path.properties");
+
+    private String pathToAttachments() {
+        return properties.getProperty("attachments.path");
+    }
 
     @Override
     public String getPath(Integer id, String fileName) throws IOException {
@@ -33,15 +35,15 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     @Override
     public HashMap<Integer, String> getContactIdAndFileName(Integer attachmentId) {
-        HashMap<Integer, String> pair = new HashMap<>();
-        pair.put(AttachmentDao.getContactIdByAttachmentId(attachmentId), AttachmentDao.getFileNameByAttachmentId(attachmentId));
-        return pair;
+        HashMap<Integer, String> attachment = new HashMap<>();
+        attachment.put(AttachmentDao.getContactIdByAttachmentId(attachmentId), AttachmentDao.getFileNameByAttachmentId(attachmentId));
+        return attachment;
     }
 
     @Override
     public void deleteContactsFolder(Integer id) throws IOException {
         properties.load(inputStream);
-        String fullPath = properties.getProperty("attachments.path") + "contact_" + id;
+        String fullPath = pathToAttachments() + "contact_" + id;
         File delete = new File(fullPath);
         if (delete.exists()) {
             FileUtils.deleteDirectory(delete);
@@ -49,9 +51,8 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
-    public String getJsonAttachmentsById(Integer id) throws JsonProcessingException {
-        List<AttachmentInfo> allAttachmentInfos = AttachmentDao.getAllAttachmentsById(id);
-        return mapper.writeValueAsString(allAttachmentInfos);
+    public List<AttachmentInfo> getJsonAttachmentsById(Integer id) {
+        return AttachmentDao.getAllAttachmentsById(id);
     }
 
     @Override
@@ -63,7 +64,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     @Override
     public void uploadAttachment(Attachment attachment, Integer attachmentId) throws IOException {
         properties.load(inputStream);
-        String pathForAttachments = properties.getProperty("attachments.path");
+        String pathForAttachments = pathToAttachments();
         String contactFolder = "contact_" + attachment.getFileInfo().getContactId() + File.separator;
         Path folder = Paths.get(pathForAttachments + contactFolder);
         if (!Files.exists(folder)) {
@@ -91,7 +92,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     @Override
     public void deleteAttachmentsFromFolder(Integer attachmentId) throws IOException {
         properties.load(inputStream);
-        String pathForAttachments = properties.getProperty("attachments.path");
+        String pathForAttachments = pathToAttachments();
         String contactFolder = "contact_" + AttachmentDao.getContactIdByAttachmentId(attachmentId) + File.separator;
         String extension = AttachmentDao.getFileNameByAttachmentId(attachmentId).split(File.separator + ".")[0];
         File file = new File(pathForAttachments + contactFolder + attachmentId + "." + extension);

@@ -2,8 +2,8 @@ package com.andrew.commands.impl;
 
 import com.andrew.commands.Command;
 import com.andrew.dao.ContactDao;
-
 import com.andrew.service.impl.ContactServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,32 +32,32 @@ public class Search implements Command {
 
 
                 if (request.getParameter("ageComparison") != null) {
-                   if(request.getParameter("ageComparison").equals("more")){
-                       String ageComparison = ">";
-                       if (request.getParameter("year") != null)
-                           ContactDao.searchQuery += ("year(birthday)" + ageComparison + request.getParameter("year") + " and ");
-                       if (request.getParameter("month") != null)
-                           ContactDao.searchQuery += ("month(birthday)" + ageComparison + request.getParameter("month") + " and ");
-                       if (request.getParameter("day") != null)
-                           ContactDao.searchQuery += ("day(birthday)" + ageComparison + request.getParameter("day") + " and ");
-                   } else if(request.getParameter("ageComparison").equals("less")){
-                       String ageComparison = "<";
-                       if (request.getParameter("year") != null)
-                           ContactDao.searchQuery += ("year(birthday)" + ageComparison + request.getParameter("year") + " and ");
-                       if (request.getParameter("month") != null)
-                           ContactDao.searchQuery += ("month(birthday)" + ageComparison + request.getParameter("month") + " and ");
-                       if (request.getParameter("day") != null)
-                           ContactDao.searchQuery += ("day(birthday)" + ageComparison + request.getParameter("day") + " and ");
+                    if (request.getParameter("ageComparison").equals("more")) {
+                        String ageComparison = ">";
+                        if (request.getParameter("year") != null)
+                            ContactDao.searchQuery += ("year(birthday)" + ageComparison + request.getParameter("year") + " and ");
+                        if (request.getParameter("month") != null)
+                            ContactDao.searchQuery += ("month(birthday)" + ageComparison + request.getParameter("month") + " and ");
+                        if (request.getParameter("day") != null)
+                            ContactDao.searchQuery += ("day(birthday)" + ageComparison + request.getParameter("day") + " and ");
+                    } else if (request.getParameter("ageComparison").equals("less")) {
+                        String ageComparison = "<";
+                        if (request.getParameter("year") != null)
+                            ContactDao.searchQuery += ("year(birthday)" + ageComparison + request.getParameter("year") + " and ");
+                        if (request.getParameter("month") != null)
+                            ContactDao.searchQuery += ("month(birthday)" + ageComparison + request.getParameter("month") + " and ");
+                        if (request.getParameter("day") != null)
+                            ContactDao.searchQuery += ("day(birthday)" + ageComparison + request.getParameter("day") + " and ");
 
-                   } else if(request.getParameter("ageComparison").equals("equals")){
-                       String ageComparison = "=";
-                       if (request.getParameter("year") != null)
-                           ContactDao.searchQuery += ("year(birthday)" + ageComparison + request.getParameter("year") + " and ");
-                       if (request.getParameter("month") != null)
-                           ContactDao.searchQuery += ("month(birthday)" + ageComparison + request.getParameter("month") + " and ");
-                       if (request.getParameter("day") != null)
-                           ContactDao.searchQuery += ("day(birthday)" + ageComparison + request.getParameter("day") + " and ");
-                   }
+                    } else if (request.getParameter("ageComparison").equals("equals")) {
+                        String ageComparison = "=";
+                        if (request.getParameter("year") != null)
+                            ContactDao.searchQuery += ("year(birthday)" + ageComparison + request.getParameter("year") + " and ");
+                        if (request.getParameter("month") != null)
+                            ContactDao.searchQuery += ("month(birthday)" + ageComparison + request.getParameter("month") + " and ");
+                        if (request.getParameter("day") != null)
+                            ContactDao.searchQuery += ("day(birthday)" + ageComparison + request.getParameter("day") + " and ");
+                    }
 
                 }
                 if (request.getParameter("nationality") != null) {
@@ -97,10 +97,11 @@ public class Search implements Command {
                     ContactDao.searchQuery += ("zip_code=" + "\'" + request.getParameter("zipCode") + "\'" + " and ");
                 }
                 ContactDao.searchQuery = ContactDao.searchQuery.substring(0, ContactDao.searchQuery.length() - 5);
+                String req = request.getParameterMap().toString();
 
             }
             response.setHeader("Content-Type", "application/json; charset=UTF-8");
-            response.getWriter().write(new ContactServiceImpl().getJsonSearchCount());
+            response.getWriter().write(new ObjectMapper().writeValueAsString(new ContactServiceImpl().getJsonSearchCount()));
         } catch (Exception e) {
             logger.error(e);
         }

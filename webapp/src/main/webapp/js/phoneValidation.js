@@ -47,14 +47,14 @@ function validatePhoneEdit() {
   var text;
 
 
-  if (countryCode.length > 4 || isNaN(countryCode) || countryCode.length === 0) {
+  if (countryCode.length > 5 || isNaN(countryCode) || countryCode.length === 0) {
     text = "Country code must be less then 4 symbols!Cant\'t have letters!";
     document.getElementById("validateCountryCode2").innerHTML = text;
   } else {
     text = "";
   }
 
-  if (operatorCode.length > 4 || isNaN(operatorCode) || operatorCode.length === 0) {
+  if (operatorCode.length > 5 || isNaN(operatorCode) || operatorCode.length === 0) {
     text = "Operator code must be less then 4 symbols!Cant\'t have letters!";
     document.getElementById("validateOperatorCode2").innerHTML = text;
   } else {
